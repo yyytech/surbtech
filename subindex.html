@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>간단 심리 상태 체크</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", system-ui, sans-serif;
+      background: #FFF6EE;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .app-container {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      padding: 20px 18px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .app-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #FFF0E0;
+      color: #C46B2E;
+      font-weight: 500;
+    }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .app-subtitle {
+      font-size: 13px;
+      color: #777;
+      line-height: 1.4;
+    }
+
+    .progress-wrapper {
+      margin-top: 4px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #999;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: #F1E3D6;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #F9A96D, #F47645);
+      transition: width 0.25s ease-out;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .question-card {
+      background: #FFF8F2;
+      border-radius: 14px;
+      padding: 14px 14px 16px;
+    }
+
+    .question-label {
+      font-size: 11px;
+      color: #C46B2E;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .question-text {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.5;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    .question-hint {
+      font-size: 12px;
+      color: #888;
+      line-height: 1.4;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.05s ease-out, box-shadow 0.1s ease-out, background 0.1s ease-out;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #F9A96D, #F47645);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(244, 122, 69, 0.35);
+    }
+
+    .btn-secondary {
+      background: #F6F1EC;
+      color: #555;
+    }
+
+    .btn-outline {
+      background: #FFFFFF;
+      border: 1px solid #E1D3C8;
+      color: #555;
+    }
+
+    .btn-small {
+      padding: 9px 12px;
+      font-size: 13px;
+    }
+
+    .info-text {
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    /* 결과 화면 */
+    .result-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .result-tag {
+      font-size: 11px;
+      color: #C46B2E;
+      font-weight: 500;
+    }
+
+    .risk-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .risk-label {
+      font-size: 12px;
+      color: #777;
+    }
+
+    .risk-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #F47645;
+    }
+
+    .risk-level {
+      font-size: 12px;
+      color: #555;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #FFF0E0;
+      margin-left: auto;
+    }
+
+    .result-card {
+      background: #FFF8F2;
+      border-radius: 14px;
+      padding: 14px 14px 16px;
+      margin-top: 8px;
+    }
+
+    .result-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    .result-text {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    .divider {
+      height: 1px;
+      background: #F0E2D6;
+      margin: 10px 0;
+    }
+
+    .product-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    .product-text {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    .cta-button {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      border-radius: 999px;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-weight: 500;
+      background: linear-gradient(135deg, #F9A96D, #F47645);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(244, 122, 69, 0.35);
+      margin-top: 4px;
+    }
+
+    .cta-button span {
+      margin-left: 4px;
+      font-size: 13px;
+    }
+
+    .restart {
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    @media (max-width: 360px) {
+      .app-container {
+        padding: 16px 14px 20px;
+      }
+      .app-title {
+        font-size: 16px;
+      }
+      .question-text {
+        font-size: 14px;
+      }
+      .btn {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <header class="app-header">
+        <div style="font-size:16px; font-weight:700; color:#444; text-align:center;">
+  안아 ANAH
+</div>
+      <div class="badge">2분 안에 끝나는 상태 체크</div>
+      <h1 class="app-title">지금, 몸과 마음은 얼마나 지친 상태일까요?</h1>
+      <p class="app-subtitle">
+        최근 수면, 스트레스, 외로움과 대처 방식을 간단히 확인해 보고<br>
+        당신의 패턴에 맞는 솔루션을 <strong>'안아 ANAH'</strong>가 제안해 드립니다.
+      </p>
+
+      <div class="progress-wrapper">
+        <div class="progress-top">
+          <span id="progress-label">질문 1 / 5</span>
+          <span>약 2분 소요</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-bar"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 설문 화면 -->
+    <section class="screen active" id="survey-screen">
+      <div class="question-card">
+        <div class="question-label">Q1. 최근 2주 기준</div>
+        <div class="question-text" id="question-text">
+          최근 2주 동안, 밤에 잠에서 자주 깨거나 자고 나도 개운하지 않은 날이 일주일에 3일 이상 있었다.
+        </div>
+        <div class="question-hint" id="question-hint">
+          딱 맞지는 않아도, 내 상황과 더 가까운 쪽을 선택해 주세요.
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="btn btn-primary" id="btn-yes">네, 제 상황과 더 가깝습니다</button>
+        <button class="btn btn-secondary" id="btn-no">아니오, 크게 해당하지 않습니다</button>
+      </div>
+
+      <p class="info-text">
+        이 체크는 의료적 진단이 아닌, 현재 상태를 돌아보기 위한 간단한 자기 점검입니다.<br>
+        불편한 문항이 있다면 건너뛰셔도 괜찮습니다.
+      </p>
+    </section>
+
+    <!-- 결과 화면 -->
+    <section class="screen" id="result-screen">
+      <div class="result-header">
+        <div class="result-tag">간단 상태 리포트</div>
+        <div class="risk-row">
+          <span class="risk-label">현재 위험 지수</span>
+          <span class="risk-value" id="risk-percent">0%</span>
+          <span class="risk-level" id="risk-level-label">-</span>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <div class="result-title" id="result-title">현재 전반적으로 안정적인 편이에요.</div>
+        <p class="result-text" id="result-text">
+          최근의 수면과 스트레스 패턴을 종합했을 때, 큰 과부하 상태는 아니지만 일상적인 피로는 누적될 수 있는 상태입니다.
+          지금처럼 내 상태를 주기적으로 점검해 주는 것만으로도 큰 도움이 됩니다.
+        </p>
+
+        <div class="divider"></div>
+
+        <div class="product-title">몸이 먼저 “괜찮다”고 느끼는 경험이 중요합니다</div>
+        <p class="product-text">
+          긴장과 스트레스가 쌓여 있을 때, 뇌에게 안전 신호를 보내는 가장 직접적인 방법 중 하나는
+          <strong>신체 감각을 통해 안정감을 느끼게 하는 것</strong>입니다.<br><br>
+          저희가 준비 중인 솔루션은 <strong>부드러운 압박감과 따뜻한 온도 자극</strong>을 통해
+          몸이 먼저 “괜찮아, 지금은 안전해”라고 느낄 수 있도록 돕는 것을 목표로 하고 있습니다.
+        </p>
+
+        <a href="https://yyytech.github.io/anahtech/" class="cta-button" id="cta-link">
+          내 상태에 맞는 이완 솔루션 보러가기
+          <span>↗</span>
+        </a>
+      </div>
+
+      <div class="restart">
+        <button class="btn btn-outline btn-small" id="btn-restart">다시 체크해 보기</button>
+      </div>
+
+      <p class="info-text">
+        이 결과는 참고용이며, 심한 불면·우울·불안이 지속된다면 가까운 전문가와의 상담을 권장드립니다.
+      </p>
+    </section>
+  </div>
+
+  <script>
+    // 질문 정의
+    const questions = [
+      {
+        id: 1,
+        label: "Q1. 최근 2주 기준",
+        text: "최근 2주 동안, 밤에 잠에서 자주 깨거나 자고 나도 개운하지 않은 날이 일주일에 3일 이상 있었다.",
+        hint: "최근 2주를 떠올렸을 때 전체적인 느낌에 더 가까운 쪽을 선택해 주세요."
+      },
+      {
+        id: 2,
+        label: "Q2. 최근 2주 기준",
+        text: "쉴 시간은 있어도 머리가 복잡해서, 쉬고 나도 마음이 잘 가라앉지 않는 느낌이 자주 든다.",
+        hint: "일·공부·대인관계 등 어떤 이유든 상관없이, 마음의 긴장감을 기준으로 생각해 주세요."
+      },
+      {
+        id: 3,
+        label: "Q3. 최근 2주 기준",
+        text: "사람들과 함께 있어도 왠지 외롭거나, 혼자 있을 때 공허하다고 느끼는 편이다.",
+        hint: "정확한 횟수보다도, 요즘 나를 가장 잘 설명하는 쪽을 골라 주세요."
+      },
+      {
+        id: 4,
+        label: "Q4. 평소 대처 방식",
+        text: "힘들어도 ‘괜찮아요’라고 넘기면서, 내 상태를 자세히 들여다보기보다는 그냥 버티는 편이다.",
+        hint: "가끔 예외는 있어도, 나의 평소 습관과 더 비슷한 쪽을 선택해 주세요."
+      },
+      {
+        id: 5,
+        label: "Q5. 요즘 전반적인 상태",
+        text: "요즘의 나는 ‘몸도 마음도 충분히 쉬지 못하고 계속 긴장 상태에 가깝다’에 더 가깝다.",
+        hint: "하루의 끝을 떠올려 보면서, 현재 스스로를 가장 잘 표현하는 쪽을 선택해 주세요."
+      }
+    ];
+
+    // 위험 지수 매핑
+    function getRiskPercent(yesCount) {
+      switch (yesCount) {
+        case 5: return 94;
+        case 4: return 78;
+        case 3: return 64;
+        case 2: return 49;
+        case 1: return 30;
+        default: return 17;
+      }
+    }
+
+    // 위험 수준 라벨
+    function getRiskLevelLabel(yesCount) {
+      if (yesCount <= 1) {
+        return "전반적으로 비교적 안정";
+      } else if (yesCount <= 3) {
+        return "부담이 누적되는 상태";
+      } else {
+        return "과부하에 가까운 상태";
+      }
+    }
+
+    // 결과 설명 텍스트
+    function getResultText(yesCount) {
+      if (yesCount <= 1) {
+        return {
+          title: "현재 전반적으로 비교적 안정적인 편이에요.",
+          text:
+            "수면과 스트레스, 외로움과 대처 방식을 함께 보았을 때 큰 과부하 상태는 아니지만, 일상 속 피로와 긴장은 누구에게나 쌓일 수 있습니다. " +
+            "지금처럼 가끔 내 상태를 점검해 주고, 잠들기 전 몸과 마음이 한 번씩 풀어지는 시간을 만들어 주시면 좋겠습니다."
+        };
+      } else if (yesCount <= 3) {
+        return {
+          title: "요즘 몸과 마음에 부담이 조금씩 쌓이고 있는 상태예요.",
+          text:
+            "수면의 질이 떨어지거나, 머리가 잘 쉬지 못하고, 혼자 감당하려는 패턴이 함께 보입니다. 아직 한계까지 온 것은 아니지만, " +
+            "이 시기에 회복 루틴을 만들어 두지 않으면 피로와 예민함이 일상에 더 크게 스며들 수 있습니다. " +
+            "잠들기 전, 혹은 하루 중 짧은 시간이라도 몸이 ‘아, 이제 좀 풀려도 되겠다’라고 느끼는 순간을 의도적으로 만들어 주는 것이 중요합니다."
+        };
+      } else {
+        return {
+          title: "지금은 몸과 마음이 꽤 과부하 상태에 가까울 수 있어요.",
+          text:
+            "수면의 회복감이 떨어지고, 머리는 계속 긴장 상태에 가깝고, 혼자 버티는 시간이 길어진 신호들이 함께 나타나고 있습니다. " +
+            "이 상태가 오래 지속되면 작은 일에도 예민해지고, 의욕이 떨어지거나 관계에서도 지침을 느끼기 쉬워요. " +
+            "지금은 ‘더 버티는 것’보다, 몸과 마음이 안전하다고 느끼는 경험을 자주 만들어 주는 것이 핵심입니다."
+        };
+      }
+    }
+
+    // 상태 변수
+    let currentIndex = 0;
+    let yesCount = 0;
+
+    // DOM 요소
+    const surveyScreen = document.getElementById("survey-screen");
+    const resultScreen = document.getElementById("result-screen");
+    const questionTextEl = document.getElementById("question-text");
+    const questionHintEl = document.getElementById("question-hint");
+    const progressLabelEl = document.getElementById("progress-label");
+    const progressBarEl = document.getElementById("progress-bar");
+    const btnYes = document.getElementById("btn-yes");
+    const btnNo = document.getElementById("btn-no");
+
+    const riskPercentEl = document.getElementById("risk-percent");
+    const riskLevelLabelEl = document.getElementById("risk-level-label");
+    const resultTitleEl = document.getElementById("result-title");
+    const resultTextEl = document.getElementById("result-text");
+    const btnRestart = document.getElementById("btn-restart");
+
+    // 질문 렌더링
+    function renderQuestion() {
+      const q = questions[currentIndex];
+      questionTextEl.textContent = q.text;
+      questionHintEl.textContent = q.hint;
+
+      // 상단 라벨 & 진행률
+      progressLabelEl.textContent = `질문 ${currentIndex + 1} / ${questions.length}`;
+      const progressPercent = (currentIndex / questions.length) * 100;
+      progressBarEl.style.width = progressPercent + "%";
+    }
+
+    // 결과 화면 표시
+    function showResult() {
+      // 화면 전환
+      surveyScreen.classList.remove("active");
+      resultScreen.classList.add("active");
+
+      const riskPercent = getRiskPercent(yesCount);
+      const levelLabel = getRiskLevelLabel(yesCount);
+      const resultInfo = getResultText(yesCount);
+
+      riskPercentEl.textContent = riskPercent + "%";
+      riskLevelLabelEl.textContent = levelLabel;
+      resultTitleEl.textContent = resultInfo.title;
+      resultTextEl.textContent = resultInfo.text;
+    }
+
+    // 응답 처리
+    function handleAnswer(isYes) {
+      if (isYes) {
+        yesCount += 1;
+      }
+
+      currentIndex += 1;
+
+      if (currentIndex >= questions.length) {
+        // 마지막 질문까지 완료 → 결과 표시
+        progressBarEl.style.width = "100%";
+        showResult();
+      } else {
+        renderQuestion();
+      }
+    }
+
+    // 다시 시작
+    function restart() {
+      currentIndex = 0;
+      yesCount = 0;
+      resultScreen.classList.remove("active");
+      surveyScreen.classList.add("active");
+      renderQuestion();
+    }
+
+    // 이벤트 바인딩
+    btnYes.addEventListener("click", () => handleAnswer(true));
+    btnNo.addEventListener("click", () => handleAnswer(false));
+    btnRestart.addEventListener("click", restart);
+
+    // 초기 렌더링
+    renderQuestion();
+  </script>
+</body>
+</html>
